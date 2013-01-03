@@ -64,7 +64,7 @@ for filename in sorted(files):
 #	filename = os.path.basename(filepath)
 	
 	isImage = ".png" in filename
-	filenameNoEnding = filename.split(".")[0].replace("-","_")
+	filenameNoEnding = filename.split(".")[0].replace("-","_").replace("~","_")
 	constantName = filenameNoEnding.upper();
 	
 	for forbiddenChar in [":"]:
