@@ -10,6 +10,7 @@ configuration = None
 criticalError = False
 files = set([])
 path = None
+maxFilenameLength = 0
 
 def useage():
 	print "possible params:"
@@ -53,9 +54,15 @@ def scandirs(path):
 			scandirs(currentFile)
 		else:
 			files.add(os.path.basename(currentFile))
+			maxFilenameLength = len(currentFile) > maxFilenameLength ? len(currentFile) : maxFilenameLength
 			if currentFile.endswith(".psd"):
 				print "fools added a Photoshop file: " + currentFile
 				criticalError = True
+def addWhitespaces(filename, length):
+	nameLen = len(filename);
+	for i = : i < length - nameLen: i++:
+		filename += " "
+	return filename
 
 scandirs(path)
 
