@@ -58,7 +58,7 @@ def scandirs(path):
 				criticalError = True
 
 scandirs(path)
-
+fileExceptions = ["Default-568h@2x.png"]
 for filename in sorted(files):
 	
 #	filename = os.path.basename(filepath)
@@ -82,7 +82,8 @@ for filename in sorted(files):
 			constantsString += "#define IMG_" + constantName + " @\"" + filename + "\" \n"
 		else:
 			normalName = filename.replace("@2x.png", ".png");
-			if not normalName in files:
+			# ADDED exception on iPhone5 splashscreen
+			if not normalName in files and filename not in fileExceptions:
 				print "missing normal file for:" + filename
 				criticalError = True
 	elif ".otf" in filename:
