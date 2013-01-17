@@ -58,7 +58,9 @@ def scandirs(path):
 				criticalError = True
 
 scandirs(path)
-fileExceptions = ["Default-568h@2x.png"]
+
+constantsString += "//hash: " +str(hash(frozenset(files))) + "\n"
+
 for filename in sorted(files):
 	
 #	filename = os.path.basename(filepath)
@@ -82,12 +84,13 @@ for filename in sorted(files):
 			constantsString += "#define IMG_" + constantName + " @\"" + filename + "\" \n"
 		else:
 			normalName = filename.replace("@2x.png", ".png");
-			# ADDED exception on iPhone5 splashscreen
-			if not normalName in files and filename not in fileExceptions:
+			if not normalName in files:
 				print "missing normal file for:" + filename
 				criticalError = True
 	elif ".otf" in filename:
 		constantsString += "#define FONT_" + constantName + " @\"" + filename + "\" \n"
+	elif ".plist" in filename:
+			constantsString += "#define PLIST_" + constantName + " @\"" + filename + "\" \n"
 
 localFile = open(os.path.join(path,"ResourcesConstants.h"), 'w')
 localFile.write(constantsString)
