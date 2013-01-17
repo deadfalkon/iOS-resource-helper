@@ -89,8 +89,6 @@ for filename in sorted(files):
 				criticalError = True
 	elif ".otf" in filename:
 		constantsString += "#define FONT_" + constantName + " @\"" + filename + "\" \n"
-	elif ".plist" in filename:
-			constantsString += "#define PLIST_" + constantName + " @\"" + filename + "\" \n"
 
 localFile = open(os.path.join(path,"ResourcesConstants.h"), 'w')
 localFile.write(constantsString)
