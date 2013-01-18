@@ -90,6 +90,10 @@ for filename in sorted(files):
 		constantsString += "#define FONT_" + constantName + " @\"" + filename + "\" \n"
 	elif ".plist" in filename:
 		constantsString += "#define PLIST_" + constantName + " @\"" + filename + "\" \n"	
+# Adding gitInfo
+process = os.popen("git log -1 --pretty=format:'%H %aD %cn'","r")
+gitInfo = process.readline()  
+constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
 
 localFile = open(os.path.join(path,"ResourcesConstants.h"), 'w')
 localFile.write(constantsString)
