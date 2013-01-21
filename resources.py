@@ -40,9 +40,9 @@ if path == None:
 	useage()
 	sys.exit(1)
 
-
 baseFolder =  os.path.join(os.getcwd(),os.path.split(sys.argv[0])[0])
 os.chdir(baseFolder)
+resourceConstantsHeaderFile = os.path.join(path,"ResourcesConstants.h")
 
 
 constantsString = "//this file contains the names of all resouces as constants\n\n"
@@ -58,6 +58,49 @@ def scandirs(path):
 				criticalError = True
 
 scandirs(path)
+
+oldFileHash = ""
+oldGitHash = ""
+if (os.path.exists(resourceConstantsHeaderFile)):
+	localFile = open(resourceConstantsHeaderFile, 'r')
+	while 1:
+		line = localFile.readline()
+		if "<hash>" in line and "</hash>" in line:
+			hashStart = line.find("<hash>") + len("<hash>")
+			hashEnd = line.find("</hash>")
+			oldFileHash = str(line[hashStart:hashEnd].lstrip())
+		if "<gitHash>" in line and "</gitHash>" in line:
+			hashStart = line.find("<gitHash>") + len("<gitHash>")
+			hashEnd = line.find("</gitHash>")
+			oldGitHash = str(line[hashStart:hashEnd].lstrip())
+		if len(oldFileHash) > 0 and len(oldGitHash) > 0:
+			break		
+		if not line:
+			break
+		pass
+	localFile.close()
+
+
+#changin the directory in the mother git module
+os.chdir("../../")
+process = os.popen("git rev-parse HEAD","r")
+gitHash = process.readline().strip()
+process = os.popen("git log -1 --pretty=format:'%H %aD %cn'","r")
+gitInfo = process.readline()  
+#changing the directory back
+os.chdir(baseFolder)
+
+#hashing the list of files
+fileHash = str(hash(frozenset(files)))
+
+fileSetChanged =  not (fileHash.startswith(oldFileHash) and len(fileHash) == len(oldFileHash))
+gitRevisionChanged = not (gitHash.startswith(oldGitHash) and len(gitHash) == len(oldGitHash))
+
+constantsString += "//<hash>" + fileHash + "</hash>\n"
+constantsString += "//<gitHash>" + gitHash + "</gitHash>\n"
+constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
+
+
 fileExceptions = ["Default-568h@2x.png"]
 for filename in sorted(files):
 	
@@ -90,16 +133,17 @@ for filename in sorted(files):
 		constantsString += "#define FONT_" + constantName + " @\"" + filename + "\" \n"
 	elif ".plist" in filename:
 		constantsString += "#define PLIST_" + constantName + " @\"" + filename + "\" \n"	
-# Adding gitInfo
-process = os.popen("git log -1 --pretty=format:'%H %aD %cn'","r")
-gitInfo = process.readline()  
-constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
 
-localFile = open(os.path.join(path,"ResourcesConstants.h"), 'w')
-localFile.write(constantsString)
-localFile.close()
+if fileSetChanged or gitRevisionChanged:
+	print "writing " + resourceConstantsHeaderFile
+	localFile = open(resourceConstantsHeaderFile, 'w')
+	localFile.write(constantsString)
+	localFile.close()
+else:
+	print "no changes in " + resourceConstantsHeaderFile
 
-if criticalError and not configuration is None and not "debug" in configuration.lower():
+#"and not "debug" in configuration.lower()" should be added
+if criticalError and not configuration is None:
 	sys.exit(1)
 else:
 	sys.exit(0)	
