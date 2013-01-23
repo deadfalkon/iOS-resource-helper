@@ -4,12 +4,14 @@ import glob
 import os
 import sys
 import getopt
+import csv
 
-params = ["resources-folder=","configuration="]
+params = ["resources-folder=","configuration=","string-csv="]
 configuration = None
 criticalError = False
 files = set([])
 path = None
+stringCsv = None
 
 def useage():
 	print "possible params:"
@@ -20,7 +22,7 @@ def useage():
 		print "["+param[0:1]+"]"+param[1:]+" "+explanation
 
 try:
-	opts, args = getopt.getopt(sys.argv[1:], "cr", params)
+	opts, args = getopt.getopt(sys.argv[1:], "crs", params)
 except getopt.GetoptError, err:
 	# print help information and exit:
 	print str(err) # will print something like "option -a not recognized"
@@ -30,6 +32,8 @@ except getopt.GetoptError, err:
 for o, a in opts:
 	if  o in ("-r", "--resources-folder"):
 		path = a	
+	elif  o in ("-s", "--string-csv"):
+		stringCsv = a	
 	elif  o in ("-c", "--configuration"):
 		configuration = a
 	else:
@@ -46,6 +50,16 @@ resourceConstantsHeaderFile = os.path.join(path,"ResourcesConstants.h")
 
 
 constantsString = "//this file contains the names of all resouces as constants\n\n"
+
+if stringCsv is not None:
+	stringCsvFile = open(stringCsv,"r")
+	strings = csv.reader(stringCsvFile)
+	for row in strings:
+		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
+			
+			name = row[0].upper().replace(" ","_")
+			constantsString += "#define STRING_" + name + " NSLocalizedString(\"" + row[0] + "\",\"" + row[len(row)-1]  +"\")\n"
+	constantsString += "\n\n"
 
 def scandirs(path):
 	for currentFile in glob.glob( os.path.join(path, '*') ):
@@ -95,6 +109,8 @@ fileHash = str(hash(frozenset(files)))
 
 fileSetChanged =  not (fileHash.startswith(oldFileHash) and len(fileHash) == len(oldFileHash))
 gitRevisionChanged = not (gitHash.startswith(oldGitHash) and len(gitHash) == len(oldGitHash))
+stringsProvided = stringCsv is not None
+
 
 constantsString += "//<hash>" + fileHash + "</hash>\n"
 constantsString += "//<gitHash>" + gitHash + "</gitHash>\n"
@@ -134,7 +150,7 @@ for filename in sorted(files):
 	elif ".plist" in filename:
 		constantsString += "#define PLIST_" + constantName + " @\"" + filename + "\" \n"	
 
-if fileSetChanged or gitRevisionChanged:
+if fileSetChanged or gitRevisionChanged or stringsProvided:
 	print "writing " + resourceConstantsHeaderFile
 	localFile = open(resourceConstantsHeaderFile, 'w')
 	localFile.write(constantsString)
