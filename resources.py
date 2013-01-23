@@ -51,16 +51,6 @@ resourceConstantsHeaderFile = os.path.join(path,"ResourcesConstants.h")
 
 constantsString = "//this file contains the names of all resouces as constants\n\n"
 
-if stringCsv is not None:
-	stringCsvFile = open(stringCsv,"r")
-	strings = csv.reader(stringCsvFile)
-	for row in strings:
-		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
-			
-			name = row[0].upper().replace(" ","_")
-			constantsString += "#define STRING_" + name + " NSLocalizedString(\"" + row[0] + "\",\"" + row[len(row)-1]  +"\")\n"
-	constantsString += "\n\n"
-
 def scandirs(path):
 	for currentFile in glob.glob( os.path.join(path, '*') ):
 		if os.path.isdir(currentFile):
@@ -115,6 +105,17 @@ stringsProvided = stringCsv is not None
 constantsString += "//<hash>" + fileHash + "</hash>\n"
 constantsString += "//<gitHash>" + gitHash + "</gitHash>\n"
 constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
+
+if stringCsv is not None:
+	constantsString += "\n\n"
+	stringCsvFile = open(stringCsv,"r")
+	strings = csv.reader(stringCsvFile)
+	for row in strings:
+		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
+			
+			name = row[0].upper().replace(" ","_")
+			constantsString += "#define STRING_" + name + " NSLocalizedString(\"" + row[0] + "\",\"" + row[len(row)-1]  +"\")\n"
+	constantsString += "\n\n"
 
 
 fileExceptions = ["Default-568h@2x.png"]
