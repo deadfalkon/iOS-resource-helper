@@ -114,7 +114,7 @@ if stringCsv is not None:
 		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
 			
 			name = row[0].upper().replace(" ","_")
-			constantsString += "#define STRING_" + name + " NSLocalizedString(\"" + row[0] + "\",\"" + row[len(row)-1]  +"\")\n"
+			constantsString += "#define STRING_" + name + " NSLocalizedString(@\"" + row[0] + "\",\"" + row[len(row)-1]  +"\")\n"
 	constantsString += "\n\n"
 
 
