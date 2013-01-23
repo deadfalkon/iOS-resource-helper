@@ -13,7 +13,7 @@ files = set([])
 path = None
 stringCsv = None
 
-def useage():
+def usage():
 	print "possible params:"
 	for param in params:
 		explanation = "(add this param to enable the feature)"
@@ -41,7 +41,7 @@ for o, a in opts:
 		
 if path == None:
 	print "the resource path was not defined"
-	useage()
+	usage()
 	sys.exit(1)
 
 baseFolder =  os.path.join(os.getcwd(),os.path.split(sys.argv[0])[0])
