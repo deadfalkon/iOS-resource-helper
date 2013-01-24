@@ -6,7 +6,7 @@ import sys
 import getopt
 import csv
 
-params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage","stringsFileName="]
+params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage","stringsFileName=","replaceRecursive"]
 configuration = None
 criticalError = False
 files = set([])
@@ -17,6 +17,7 @@ stringCsv = None
 checkImageUseage = False
 checkStringUseage = False
 stringsFileName = "Localizeable"
+replaceRecursive = False
 
 def usage():
 	print "possible params:"
@@ -46,7 +47,9 @@ for o, a in opts:
 	elif o in ("--checkStringUseage"):
 		checkStringUseage = True
 	elif o in ("--stringsFileName"):
-		stringsFileName = a				
+		stringsFileName = a		
+	elif o in ("--replaceRecursive"):
+		replaceRecursive = True
 	else:
 		assert False, "unhandled option"+ o+a
 		
@@ -118,7 +121,12 @@ constantsString += "//<gitHash>" + gitHash + "</gitHash>\n"
 constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
 #constantsString += "// Localization\n#define lStr(key) NSLocalizedStringFromTable(key, @\"{0}\", nil)".format(stringsFileName)
 
+def replaceRecursiveAll(a, b):
+	sed = "find . -name *.m | while read i; do sed -i'.bak' -e's/{0}/'\"{1}\"'/' $i;rm $i.bak; done".format(a,b)
+	os.popen(sed)
+
 if stringCsv is not None:
+	print "replacing {0} with {1}".format(a,b)
 	localFile = open("../../resources/{0}.strings".format(stringsFileName), 'w')
 	
 	constantsString += "\n\n"
@@ -165,6 +173,9 @@ for fileName in sorted(files):
 			constantName = "IMG_" + constantName
 			constantsString += "#define {0} @\"{1}\" \n".format(constantName,fileName)
 			imgConstants.append([constantName,fileName])
+			if replaceRecursive:				
+				replaceRecursiveAll("@\"{0}\"".format(fileName),constantName)
+				replaceRecursiveAll("@\"{0}\"".format(os.path.splitext(fileName)[0]),constantName)
 		else:
 			normalName = fileName.replace("@2x.png", ".png");
 			# ADDED exception on iPhone5 splashscreen
