@@ -122,11 +122,11 @@ constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
 #constantsString += "// Localization\n#define lStr(key) NSLocalizedStringFromTable(key, @\"{0}\", nil)".format(stringsFileName)
 
 def replaceRecursiveAll(a, b):
+	print "replacing {0} with {1}".format(a,b)
 	sed = "find . -name *.m | while read i; do sed -i'.bak' -e's/{0}/'\"{1}\"'/' $i;rm $i.bak; done".format(a,b)
 	os.popen(sed)
-
+	
 if stringCsv is not None:
-	print "replacing {0} with {1}".format(a,b)
 	localFile = open("../../resources/{0}.strings".format(stringsFileName), 'w')
 	
 	constantsString += "\n\n"
