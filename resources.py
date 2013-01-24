@@ -6,12 +6,16 @@ import sys
 import getopt
 import csv
 
-params = ["resources-folder=","configuration=","string-csv="]
+params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage"]
 configuration = None
 criticalError = False
 files = set([])
+imgConstants = []
+stringConstants = []
 path = None
 stringCsv = None
+checkImageUseage = False
+checkStringUseage = False
 
 def usage():
 	print "possible params:"
@@ -36,6 +40,10 @@ for o, a in opts:
 		stringCsv = a	
 	elif  o in ("-c", "--configuration"):
 		configuration = a
+	elif o in ("--checkImageUseage"):
+		checkImageUseage = True
+	elif o in ("--checkStringUseage"):
+			checkStringUseage = True
 	else:
 		assert False, "unhandled option"+ o+a
 		
@@ -97,7 +105,7 @@ os.chdir(baseFolder)
 #hashing the list of files
 fileHash = str(hash(frozenset(files)))
 
-fileSetChanged =  not (fileHash.startswith(oldFileHash) and len(fileHash) == len(oldFileHash))
+fileSetChanged = not (fileHash.startswith(oldFileHash) and len(fileHash) == len(oldFileHash))
 gitRevisionChanged = not (gitHash.startswith(oldGitHash) and len(gitHash) == len(oldGitHash))
 stringsProvided = stringCsv is not None
 
@@ -113,43 +121,50 @@ if stringCsv is not None:
 	for row in strings:
 		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
 			
-			name = row[0].upper().replace(" ","_")
-			constantsString += "#define STRING_" + name + " NSLocalizedString(@\"" + row[0] + "\",\"" + row[len(row)-1]  +"\")\n"
+			name = "STRING_" + row[0].upper().replace(" ","_")		
+			constantsString += "#define {0} NSLocalizedString(@\"{1}\",\"{2}\")\n".format(name, row[0],row[len(row)-1])
+			stringConstants.append(name)
 	constantsString += "\n\n"
 
 
 fileExceptions = ["Default-568h@2x.png"]
-for filename in sorted(files):
+
+
+
+
+for fileName in sorted(files):
 	
-#	filename = os.path.basename(filepath)
+#	fileName = os.path.basename(filepath)
 	
-	isImage = ".png" in filename
-	filenameNoEnding = filename.split(".")[0].replace("-","_").replace("~","_")
-	constantName = filenameNoEnding.upper();
+	isImage = ".png" in fileName
+	fileNameNoEnding = fileName.split(".")[0].replace("-","_").replace("~","_")
+	constantName = fileNameNoEnding.upper();
 	
 	for forbiddenChar in [":"]:
-		if forbiddenChar.lower() in filename.lower():
+		if forbiddenChar.lower() in fileName.lower():
 			criticalError = True
-			print filename + " contains a fobidden character " + forbiddenChar
+			print fileName + " contains a fobidden character " + forbiddenChar
 	
 	if isImage:
-		if not "@2x" in filename:
-			name2x = filename.replace(".png", "@2x.png");
+		if not "@2x" in fileName:
+			name2x = fileName.replace(".png", "@2x.png");
 			if not name2x in files:
-				print "missing 2x file for:" + filename
-				if not "default" in filename:
+				print "missing 2x file for:" + fileName
+				if not "default" in fileName:
 					criticalError = True
-			constantsString += "#define IMG_" + constantName + " @\"" + filename + "\" \n"
+			constantName = "IMG_" + constantName
+			constantsString += "#define {0} @\"{1}\" \n".format(constantName,fileName)
+			imgConstants.append([constantName,fileName])
 		else:
-			normalName = filename.replace("@2x.png", ".png");
+			normalName = fileName.replace("@2x.png", ".png");
 			# ADDED exception on iPhone5 splashscreen
-			if not normalName in files and filename not in fileExceptions:
-				print "missing normal file for:" + filename
+			if not normalName in files and fileName not in fileExceptions:
+				print "missing normal file for:" + fileName
 				criticalError = True
-	elif ".otf" in filename:
-		constantsString += "#define FONT_" + constantName + " @\"" + filename + "\" \n"
-	elif ".plist" in filename:
-		constantsString += "#define PLIST_" + constantName + " @\"" + filename + "\" \n"	
+	elif ".otf" in fileName:
+		constantsString += "#define FONT_" + constantName + " @\"" + fileName + "\" \n"
+	elif ".plist" in fileName:
+		constantsString += "#define PLIST_" + constantName + " @\"" + fileName + "\" \n"	
 
 if fileSetChanged or gitRevisionChanged or stringsProvided:
 	print "writing " + resourceConstantsHeaderFile
@@ -158,6 +173,30 @@ if fileSetChanged or gitRevisionChanged or stringsProvided:
 	localFile.close()
 else:
 	print "no changes in " + resourceConstantsHeaderFile
+	
+if checkStringUseage:
+	os.chdir("../../")
+	for stringConstant in stringConstants:
+		numOfOccurence = len(os.popen("grep -R -i -n '{0}' --include=*.{1} *".format(stringConstant,"{h,m}"),"r").readlines())
+		if numOfOccurence <= 1:
+			print "{0} seems not to be used in the project".format(stringConstant)
+	os.chdir(baseFolder)
+
+imageOccuranceExceptions = ["Default~ipad.png", "Default~iphone.png","Icon-72.png","Icon-Small-50.png","Icon-Small.png"]		
+if checkImageUseage:
+	os.chdir("../../")
+	for imgSet in imgConstants:
+		imgConstant = imgSet[0]
+		imgName = imgSet[1]
+		if imgName in imageOccuranceExceptions:
+			continue
+		numOfOccurence = len(os.popen("grep -R -i -n '{0}' --include=*.{1} *".format(imgConstant,"{m,pch}"),"r").readlines())
+		if numOfOccurence == 0:
+			numOfOccurence = len(os.popen("grep -R -i -n '{0}' --include=*.{1} *".format(imgName,"{xib,plist}"),"r").readlines())
+		if numOfOccurence == 0:
+			print "{0} seems not to be used in the project".format(imgName)
+	os.chdir(baseFolder)
+
 
 #"and not "debug" in configuration.lower()" should be added
 if criticalError and not configuration is None:
