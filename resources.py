@@ -139,7 +139,7 @@ if stringCsv is not None:
 			constantName = cleanName
 			comment = row[len(row)-1]
 			german = row[1]
-			constantsString += "#define {0} NSLocalizedStringFromTable(@\"{1}\",@\"{2}\",@\"{3}\")\n".format(constantName,stringsFileName, cleanName,comment)
+			constantsString += "#define {0} NSLocalizedStringFromTable(@\"{2}\",@\"{1}\",@\"{3}\")\n".format(constantName,stringsFileName, cleanName,comment)
 			stringConstants.append(constantName)
 			localFile.write("\"{0}\" = \"{1}\";\n".format(cleanName,german))
 			
