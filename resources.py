@@ -192,7 +192,10 @@ if checkStringUseage:
 			print "{0} seems not to be used in the project".format(stringConstant)
 	os.chdir(baseFolder)
 
-imageOccuranceExceptions = ["Default~ipad.png", "Default~iphone.png","Icon-72.png","Icon-Small-50.png","Icon-Small.png"]		
+imageOccuranceExceptions = ["Default~ipad.png", "Default~iphone.png","Icon-72.png","Icon-Small-50.png","Icon-Small.png"]
+
+unusedImages = []
+
 if checkImageUseage:
 	os.chdir("../../")
 	for imgSet in imgConstants:
@@ -204,8 +207,10 @@ if checkImageUseage:
 		if numOfOccurence == 0:
 			numOfOccurence = len(os.popen("grep -R -i -n '{0}' --include=*.{1} *".format(imgName,"{xib,plist}"),"r").readlines())
 		if numOfOccurence == 0:
+			unusedImages.append(imgName)
 			print "{0} seems not to be used in the project".format(imgName)
 	os.chdir(baseFolder)
+	print "unused images: {0}".format(", ".join(unusedImages))
 
 
 #"and not "debug" in configuration.lower()" should be added
