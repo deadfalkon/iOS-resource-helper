@@ -129,9 +129,6 @@ if stringCsv is not None:
 
 fileExceptions = ["Default-568h@2x.png"]
 
-
-
-
 for fileName in sorted(files):
 	
 #	fileName = os.path.basename(filepath)
