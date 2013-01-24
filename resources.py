@@ -115,17 +115,26 @@ constantsString += "//<gitHash>" + gitHash + "</gitHash>\n"
 constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
 
 if stringCsv is not None:
+	localFile = open("../../resources/Localizable.strings", 'w')
+	
 	constantsString += "\n\n"
 	stringCsvFile = open(stringCsv,"r")
 	strings = csv.reader(stringCsvFile)
 	for row in strings:
 		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
 			
-			name = "STRING_" + row[0].upper().replace(" ","_")		
-			constantsString += "#define {0} NSLocalizedString(@\"{1}\",\"{2}\")\n".format(name, row[0],row[len(row)-1])
-			stringConstants.append(name)
+			cleanName = row[0].upper().replace(" ","_")
+			constantName = "STRING_" + cleanName
+			comment = row[len(row)-1]
+			german = row[1]
+			constantsString += "#define {0} NSLocalizedString(@\"{1}\",\"{2}\")\n".format(constantName, row[1],comment)
+			stringConstants.append(constantName)
+			localFile.write("\"{0}\" = \"{1}\";\n".format(cleanName,german))
+			
 	constantsString += "\n\n"
-
+	
+	localFile.close()
+		
 
 fileExceptions = ["Default-568h@2x.png"]
 
