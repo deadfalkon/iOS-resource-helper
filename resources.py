@@ -6,7 +6,7 @@ import sys
 import getopt
 import csv
 
-params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage"]
+params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage","stringsFileName="]
 configuration = None
 criticalError = False
 files = set([])
@@ -16,6 +16,7 @@ path = None
 stringCsv = None
 checkImageUseage = False
 checkStringUseage = False
+stringsFileName = "Localizeable"
 
 def usage():
 	print "possible params:"
@@ -43,7 +44,9 @@ for o, a in opts:
 	elif o in ("--checkImageUseage"):
 		checkImageUseage = True
 	elif o in ("--checkStringUseage"):
-			checkStringUseage = True
+		checkStringUseage = True
+	elif o in ("--stringsFileName"):
+		stringsFileName = a				
 	else:
 		assert False, "unhandled option"+ o+a
 		
@@ -113,9 +116,10 @@ stringsProvided = stringCsv is not None
 constantsString += "//<hash>" + fileHash + "</hash>\n"
 constantsString += "//<gitHash>" + gitHash + "</gitHash>\n"
 constantsString += "#define GIT_INFO @\"" + str(gitInfo) + "\" \n"
+#constantsString += "// Localization\n#define lStr(key) NSLocalizedStringFromTable(key, @\"{0}\", nil)".format(stringsFileName)
 
 if stringCsv is not None:
-	localFile = open("../../resources/Localizable.strings", 'w')
+	localFile = open("../../resources/{0}.strings".format(stringsFileName), 'w')
 	
 	constantsString += "\n\n"
 	stringCsvFile = open(stringCsv,"r")
@@ -124,10 +128,10 @@ if stringCsv is not None:
 		if len(row[1]) > 0 and not row[len(row)-2].lower() in ["section","type"]:
 			
 			cleanName = row[0].upper().replace(" ","_")
-			constantName = "STRING_" + cleanName
+			constantName = cleanName
 			comment = row[len(row)-1]
 			german = row[1]
-			constantsString += "#define {0} NSLocalizedString(@\"{1}\",\"{2}\")\n".format(constantName, row[1],comment)
+			constantsString += "#define {0} NSLocalizedStringFromTable(@\"{1}\",@\"{2}\",@\"{3}\")\n".format(constantName,stringsFileName, cleanName,comment)
 			stringConstants.append(constantName)
 			localFile.write("\"{0}\" = \"{1}\";\n".format(cleanName,german))
 			
