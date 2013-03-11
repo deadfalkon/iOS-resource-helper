@@ -184,6 +184,8 @@ for fileName in sorted(files):
 				criticalError = True
 	elif ".otf" in fileName:
 		constantsString += "#define FONT_" + constantName + " @\"" + fileName + "\" \n"
+	elif ".ttf" in fileName:
+		constantsString += "#define FONT_" + constantName + " @\"" + fileName + "\" \n"
 	elif ".plist" in fileName:
 		constantsString += "#define PLIST_" + constantName + " @\"" + fileName + "\" \n"	
 
