@@ -6,7 +6,7 @@ import sys
 import getopt
 import csv
 
-params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage","stringsFileName=","stringsFilePath=","replaceRecursive"]
+params = ["resources-folder=","configuration=","string-csv=","checkImageUsage","checkStringUseage","stringsFileName=","stringsFilePath=","replaceRecursive"]
 configuration = None
 criticalError = False
 files = set([])
@@ -14,7 +14,7 @@ imgConstants = []
 stringConstants = []
 path = None
 stringCsv = None
-checkImageUseage = False
+checkImageUsage = False
 checkStringUseage = False
 stringsFilePath = ""
 stringsFileName = "Localizable"
@@ -43,8 +43,8 @@ for o, a in opts:
 		stringCsv = a	
 	elif  o in ("-c", "--configuration"):
 		configuration = a
-	elif o in ("--checkImageUseage"):
-		checkImageUseage = True
+	elif o in ("--checkImageUsage"):
+		checkImageUsage = True
 	elif o in ("--checkStringUseage"):
 		checkStringUseage = True
 	elif o in ("--stringsFileName"):
@@ -213,7 +213,7 @@ imageOccuranceExceptions = ["Default~ipad.png", "Default~iphone.png","Icon-72.pn
 
 unusedImages = []
 
-if checkImageUseage:
+if checkImageUsage:
 	os.chdir("../../")
 	for imgSet in imgConstants:
 		imgConstant = imgSet[0]
