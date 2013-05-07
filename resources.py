@@ -6,7 +6,7 @@ import sys
 import getopt
 import csv
 
-params = ["resources-folder=","configuration=","string-csv=","checkImageUsage","checkStringUseage","stringsFileName=","stringsFilePath=","replaceRecursive"]
+params = ["resources-folder=","configuration=","string-csv=","checkImageUsage","checkStringUsage","stringsFileName=","stringsFilePath=","replaceRecursive"]
 configuration = None
 criticalError = False
 files = set([])
@@ -15,7 +15,7 @@ stringConstants = []
 path = None
 stringCsv = None
 checkImageUsage = False
-checkStringUseage = False
+checkStringUsage = False
 stringsFilePath = ""
 stringsFileName = "Localizable"
 replaceRecursive = False
@@ -45,8 +45,8 @@ for o, a in opts:
 		configuration = a
 	elif o in ("--checkImageUsage"):
 		checkImageUsage = True
-	elif o in ("--checkStringUseage"):
-		checkStringUseage = True
+	elif o in ("--checkStringUsage"):
+		checkStringUsage = True
 	elif o in ("--stringsFileName"):
 		stringsFileName = a		
 	elif o in ("--stringsFilePath"):
@@ -201,7 +201,7 @@ if fileSetChanged or gitRevisionChanged or stringsProvided:
 else:
 	print "no changes in " + resourceConstantsHeaderFile
 	
-if checkStringUseage:
+if checkStringUsage:
 	os.chdir("../../")
 	for stringConstant in stringConstants:
 		numOfOccurence = len(os.popen("grep -R -i -n '{0}' --include=*.{1} *".format(stringConstant,"{h,m}"),"r").readlines())
