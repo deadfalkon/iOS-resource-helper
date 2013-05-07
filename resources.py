@@ -6,7 +6,7 @@ import sys
 import getopt
 import csv
 
-params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage","stringsFileName=","replaceRecursive"]
+params = ["resources-folder=","configuration=","string-csv=","checkImageUseage","checkStringUseage","stringsFileName=","stringsFilePath=","replaceRecursive"]
 configuration = None
 criticalError = False
 files = set([])
@@ -16,7 +16,8 @@ path = None
 stringCsv = None
 checkImageUseage = False
 checkStringUseage = False
-stringsFileName = "Localizeable"
+stringsFilePath = ""
+stringsFileName = "Localizable"
 replaceRecursive = False
 
 def usage():
@@ -48,6 +49,8 @@ for o, a in opts:
 		checkStringUseage = True
 	elif o in ("--stringsFileName"):
 		stringsFileName = a		
+	elif o in ("--stringsFilePath"):
+		stringsFilePath = a		
 	elif o in ("--replaceRecursive"):
 		replaceRecursive = True
 	else:
@@ -127,7 +130,8 @@ def replaceRecursiveAll(a, b):
 	os.popen(sed)
 	
 if stringCsv is not None:
-	localFile = open("../../resources/{0}.strings".format(stringsFileName), 'w')
+	# need to handle multiple files
+	localFile = open(os.path.join(stringsFilePath,"{0}.strings".format(stringsFileName)), 'w')
 	
 	constantsString += "\n\n"
 	stringCsvFile = open(stringCsv,"r")
