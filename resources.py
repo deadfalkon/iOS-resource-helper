@@ -171,6 +171,9 @@ for fileName in sorted(files):
             print fileName + " contains a fobidden character " + forbiddenChar
 
     if isImage:
+        if "568h" in fileName:
+            print "ignoring {0} because ist a long phone file".format(fileName)
+            continue
         if not "@2x" in fileName:
             name2x = fileName.replace(".png", "@2x.png");
             if not name2x in files:
