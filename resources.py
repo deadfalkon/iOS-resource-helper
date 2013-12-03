@@ -7,7 +7,7 @@ import getopt
 import csv
 
 params = ["resources-folder=", "configuration=", "string-csv=", "checkImageUsage", "checkStringUsage",
-          "stringsFileName=", "stringsFilePath=", "replaceRecursive"]
+          "stringsFileName=", "stringsFilePath=", "replaceRecursive", "verbose"]
 configuration = None
 criticalError = False
 files = set([])
@@ -20,6 +20,7 @@ checkStringUsage = False
 stringsFilePath = ""
 stringsFileName = "Localizable"
 replaceRecursive = False
+verbose = False
 
 
 def usage():
@@ -55,6 +56,8 @@ for o, a in opts:
         stringsFilePath = a
     elif o in "--replaceRecursive":
         replaceRecursive = True
+    elif o in ("--verbose", "-v") :
+        verbose = True
     else:
         assert False, "unhandled option" + o + a
 
@@ -161,9 +164,11 @@ for fileName in sorted(files):
 
 #	fileName = os.path.basename(filepath)
 
-    isImage = ".png" in fileName
-    fileNameNoEnding = fileName.split(".")[0].replace("-", "_").replace("~", "_")
-    constantName = fileNameNoEnding.upper();
+    isImage = fileName.endswith(".png") or fileName.endswith( ".jpg")
+
+    fileNameNoEnding = fileName.split(".")[0]
+    fileNameNoEnding_sanitized = fileNameNoEnding.replace("-", "_").replace("~", "_")
+    constantName = fileNameNoEnding_sanitized.upper()
 
     for forbiddenChar in [":"]:
         if forbiddenChar.lower() in fileName.lower():
@@ -185,19 +190,17 @@ for fileName in sorted(files):
             imgConstants.append([constantName, fileName])
             if replaceRecursive:
                 replaceRecursiveAll("@\"{0}\"".format(fileName), constantName)
-                replaceRecursiveAll("@\"{0}\"".format(os.path.splitext(fileName)[0]), constantName)
+                replaceRecursiveAll("@\"{0}\"".format(fileNameNoEnding), constantName)
         else:
             normalName = fileName.replace("@2x.png", ".png");
             # ADDED exception on iPhone5 splashscreen
             if not normalName in files and fileName not in fileExceptions:
-                print "missing normal file for:" + fileName
+                print "missing normal file for: {0}".format(fileName)
                 criticalError = True
-    elif ".otf" in fileName:
-        constantsString += "#define FONT_" + constantName + " @\"" + fileName + "\" \n"
-    elif ".ttf" in fileName:
-        constantsString += "#define FONT_" + constantName + " @\"" + fileName + "\" \n"
+    elif ".otf" in fileName or ".ttf" in fileName:
+        constantsString += "#define FONT_{0} @\"{1}\" \n".format(constantName, fileNameNoEnding)
     elif ".plist" in fileName:
-        constantsString += "#define PLIST_" + constantName + " @\"" + fileName + "\" \n"
+        constantsString += "#define PLISt_{0} @\"{1}\" \n".format(constantName, fileName)
 
 if fileSetChanged or gitRevisionChanged or stringsProvided:
     print "writing " + resourceConstantsHeaderFile
@@ -221,11 +224,21 @@ imageOccuranceExceptions = ["Default~ipad.png", "Default~iphone.png", "Icon-72.p
 
 unusedImages = []
 
+
+def logVerbose(param):
+    if verbose:
+        print(param)
+
+
 if checkImageUsage:
     os.chdir("../../")
     for imgSet in imgConstants:
+
         imgConstant = imgSet[0]
         imgName = imgSet[1]
+
+        logVerbose("checking useage of {0} and {1}".format(imgConstant, imgName))
+
         if imgName in imageOccuranceExceptions:
             continue
         numOfOccurences = len(
