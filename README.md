@@ -9,4 +9,14 @@ In our project, we cloned the iOS-resource-helper to **/submodules/iOS-resource-
 
 ![image](https://raw.github.com/sinnerschrader-mobile/iOS-resource-helper/master/documentation/sample_XCode_integration.png)
 
+Scan one folder:	
+
 	./submodules/iOS-resource-helper/resources.py --configuration=${CONFIGURATION} --resources-folder=../../resources
+
+You can also scan multiple folders:	
+	
+	./submodules/iOS-resource-helper/resources.py --configuration=${CONFIGURATION} --resources-folder=../../resources,../../otherResources
+		
+In Xcode 5 it became harder to add a custom script build script:
+
+![image](https://raw.github.com/deadfalkon/iOS-resource-helper/master/documentation/xCode5addScriptBuildPhase.png)

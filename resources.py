@@ -13,7 +13,7 @@ criticalError = False
 files = set([])
 imgConstants = []
 stringConstants = []
-path = None
+paths = None
 stringCsv = None
 checkImageUsage = False
 checkStringUsage = False
@@ -41,7 +41,7 @@ except getopt.GetoptError, err:
 
 for o, a in opts:
     if o in ("-r", "--resources-folder"):
-        path = a
+        paths = a.split(",")
     elif o in ("-s", "--string-csv"):
         stringCsv = a
     elif o in ("-c", '--configuration'):
@@ -61,14 +61,14 @@ for o, a in opts:
     else:
         assert False, "unhandled option" + o + a
 
-if path is None:
+if paths is None:
     print "the resource path was not defined"
     usage()
     sys.exit(1)
 
 baseFolder = os.path.join(os.getcwd(), os.path.split(sys.argv[0])[0])
 os.chdir(baseFolder)
-resourceConstantsHeaderFile = os.path.join(path, "ResourcesConstants.h")
+resourceConstantsHeaderFile = os.path.join(paths[0], "ResourcesConstants.h")
 
 constantsString = "//this file contains the names of all resouces as constants\n\n"
 
@@ -83,8 +83,8 @@ def scanDirs(path):
                 print "fools added a Photoshop file: " + currentFile
                 criticalError = True
 
-
-scanDirs(path)
+for path in paths:
+    scanDirs(path)
 
 oldFileHash = ""
 oldGitHash = ""
