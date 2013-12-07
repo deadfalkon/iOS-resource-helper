@@ -5,9 +5,10 @@ import os
 import sys
 import getopt
 import csv
+import plistlib
 
 params = ["resources-folder=", "configuration=", "string-csv=", "checkImageUsage", "checkStringUsage",
-          "stringsFileName=", "stringsFilePath=", "replaceRecursive", "verbose"]
+          "stringsFileName=", "stringsFilePath=", "infoPlistFile=", "replaceRecursive", "verbose"]
 configuration = None
 criticalError = False
 files = set([])
@@ -21,6 +22,8 @@ stringsFilePath = ""
 stringsFileName = "Localizable"
 replaceRecursive = False
 verbose = False
+infoPlistFilePath = None
+infoPlistFile = None
 
 
 def usage():
@@ -56,8 +59,10 @@ for o, a in opts:
         stringsFilePath = a
     elif o in "--replaceRecursive":
         replaceRecursive = True
-    elif o in ("--verbose", "-v") :
+    elif o in ("--verbose", "-v"):
         verbose = True
+    elif o in "--infoPlistFile":
+        infoPlistFilePath = a
     else:
         assert False, "unhandled option" + o + a
 
@@ -136,6 +141,7 @@ def replaceRecursiveAll(a, b):
     os.popen(sed)
 
 
+
 if stringCsv is not None:
     # need to handle multiple files
     localFile = open(os.path.join(stringsFilePath, "{0}.strings".format(stringsFileName)), 'w')
@@ -159,6 +165,15 @@ if stringCsv is not None:
     localFile.close()
 
 fileExceptions = ["Default-568h@2x.png"]
+
+if infoPlistFilePath is not None:
+    infoPlistFile = plistlib.readPlist(infoPlistFilePath)
+    infoPlistFile["UIAppFonts"] = []
+
+def addFontToPlist(fileName):
+    if infoPlistFile is not None:
+        infoPlistFile["UIAppFonts"].append(fileName)
+
 
 for fileName in sorted(files):
 
@@ -199,8 +214,17 @@ for fileName in sorted(files):
                 criticalError = True
     elif ".otf" in fileName or ".ttf" in fileName:
         constantsString += "#define FONT_{0} @\"{1}\" \n".format(constantName, fileNameNoEnding)
+        if infoPlistFile is not None:
+            addFontToPlist(fileName);
     elif ".plist" in fileName:
-        constantsString += "#define PLISt_{0} @\"{1}\" \n".format(constantName, fileName)
+        constantsString += "#define PLIST_{0} @\"{1}\" \n".format(constantName, fileName)
+
+if infoPlistFile is not None:
+    if len(infoPlistFile["UIAppFonts"]) > 0:
+        print "writing the modified plist"
+        plistlib.writePlist(infoPlistFile, infoPlistFilePath)
+    else:
+        print "not writing the modified plist because no fonts were found"
 
 if fileSetChanged or gitRevisionChanged or stringsProvided:
     print "writing " + resourceConstantsHeaderFile
