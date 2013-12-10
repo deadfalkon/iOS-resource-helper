@@ -153,7 +153,8 @@ if stringCsv is not None:
     stringCsvFile = open(stringCsv, "r")
     strings = csv.reader(stringCsvFile)
     for row in strings:
-        if len(row[1]) > 0 and not row[len(row) - 2].lower() in ["section", "type"]:
+        rowType = row[len(row) - 2].lower()
+        if not rowType in ["section", "type"]:
             cleanName = row[0].upper().replace(" ", "_")
             constantName = cleanName
             comment = row[len(row) - 1]
