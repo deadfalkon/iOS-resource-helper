@@ -26,6 +26,16 @@ infoPlistFilePath = None
 infoPlistFile = None
 doNotWriteStringDefinitions = False
 
+stringsForInfoPlist = ["NSMicrophoneUsageDescription",
+                       "NSMotionUsageDescription",
+                       "NSPhotoLibraryUsageDescription",
+                       "NSRemindersUsageDescription",
+                       "NSLocationUsageDescription",
+                       "NSContactsUsageDescription",
+                       "NSCameraUsageDescription",
+                       "NSCalendarsUsageDescription",
+                       "NSBluetoothPeripheralUsageDescription"]
+
 
 def usage():
     print "possible params:"
@@ -143,7 +153,9 @@ def replaceRecursiveAll(a, b):
     sed = "find . -name *.m | while read i; do sed -i'.bak' -e's/{0}/'\"{1}\"'/' $i;rm $i.bak; done".format(a, b)
     os.popen(sed)
 
-
+if infoPlistFilePath is not None:
+    infoPlistFile = plistlib.readPlist(infoPlistFilePath)
+    infoPlistFile["UIAppFonts"] = []
 
 if stringCsv is not None:
     # need to handle multiple files
@@ -165,15 +177,18 @@ if stringCsv is not None:
             stringConstants.append(constantName)
             localFile.write("\"{0}\" = \"{1}\";\n".format(cleanName, german))
 
+            if row[0] in stringsForInfoPlist and infoPlistFile is not None and False:
+                infoPlistFile[row[0]] = german
+
     constantsString += "\n\n"
 
     localFile.close()
 
 fileExceptions = ["Default-568h@2x.png"]
 
-if infoPlistFilePath is not None:
-    infoPlistFile = plistlib.readPlist(infoPlistFilePath)
-    infoPlistFile["UIAppFonts"] = []
+
+def intersect(a, b):
+    return list(set(a).intersection(set(b)))
 
 def addFontToPlist(fileName):
     if infoPlistFile is not None:
@@ -225,7 +240,7 @@ for fileName in sorted(files):
         constantsString += "#define PLIST_{0} @\"{1}\" \n".format(constantName, fileName)
 
 if infoPlistFile is not None:
-    if len(infoPlistFile["UIAppFonts"]) > 0:
+    if len(infoPlistFile["UIAppFonts"]) > 0 or len(intersect(infoPlistFile.keys(), stringsForInfoPlist)) > 0:
         print "writing the modified plist"
         plistlib.writePlist(infoPlistFile, infoPlistFilePath)
     else:
